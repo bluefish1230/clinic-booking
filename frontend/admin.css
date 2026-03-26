@@ -1,120 +1,511 @@
-.admin-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
+/* =============================================
+   GitHub Primer 風格 - 診所預約後台管理介面
+   ============================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    color: #1f2328;
+    background: #f6f8fa;
+    min-height: 100vh;
 }
 
-.admin-section {
-    background: #FFF;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    margin-bottom: 25px;
+a {
+    text-decoration: none;
 }
 
-.section-title {
-    font-size: 1.25rem;
-    margin-bottom: 15px;
-    color: var(--primary);
-    border-left: 5px solid var(--primary);
-    padding-left: 12px;
-}
-
-.booking-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.admin-input {
-    flex: 1;
-    min-width: 140px;
-    padding: 12px;
-    border: 1px solid #DDD;
-    border-radius: 8px;
-    font-size: 0.95rem;
-}
-
-.btn-primary {
-    background: var(--primary);
+/* =============================================
+   頂部導覽列 (Navbar)
+   ============================================= */
+.gh-navbar {
+    background: #24292f;
     color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.btn-refresh {
-    background: #EEE;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-/* 列表樣式 */
-.booking-table {
+    padding: 0 16px;
+    height: 56px;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    align-items: center;
+    border-bottom: 1px solid #444c56;
+}
+
+.gh-navbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.gh-navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gh-logo {
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.gh-repo-path {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.gh-link-dim {
+    color: #cdd9e5;
+}
+
+.gh-link-dim:hover {
+    color: #fff;
+}
+
+.gh-link-bold {
+    color: #fff;
+    font-weight: 600;
+}
+
+.gh-link-bold:hover {
+    color: #58a6ff;
+    text-decoration: underline;
+}
+
+.gh-sep {
+    color: #8b949e;
+    font-size: 18px;
+}
+
+.gh-badge-public {
+    border: 1px solid #8b949e;
+    color: #cdd9e5;
+    border-radius: 20px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.gh-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gh-nav-tag {
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.gh-btn-outline {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cdd9e5;
+    border: 1px solid #444c56;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.gh-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #6e7681;
+    color: #fff;
+}
+
+/* =============================================
+   Tab 標籤列
+   ============================================= */
+.gh-tab-bar {
+    background: #fff;
+    border-bottom: 1px solid #d0d7de;
+    padding: 0 16px;
+}
+
+.gh-tab-bar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.gh-tabs {
+    display: flex;
+    gap: 0;
+}
+
+.gh-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #57606a;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s;
+    white-space: nowrap;
+}
+
+.gh-tab:hover {
+    color: #1f2328;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.gh-tab.active {
+    color: #1f2328;
+    font-weight: 600;
+    border-bottom-color: #fd7e14;
+}
+
+.gh-tab svg {
+    color: inherit;
+    opacity: 0.7;
+}
+
+.gh-tab-count {
+    background: rgba(175, 184, 193, 0.3);
+    color: #57606a;
+    border-radius: 20px;
+    padding: 0 7px;
+    font-size: 11px;
+    min-width: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.gh-tab.active .gh-tab-count {
+    background: rgba(253, 126, 20, 0.15);
+    color: #c75d00;
+}
+
+/* =============================================
+   主內容區域
+   ============================================= */
+.gh-main {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.gh-panel {
+    display: none;
+}
+
+.gh-panel.active {
+    display: block;
+}
+
+/* =============================================
+   清單卡片 (Issue-style)
+   ============================================= */
+.gh-list-header {
+    background: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px 6px 0 0;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #57606a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gh-list-body {
+    border: 1px solid #d0d7de;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    background: #fff;
+    overflow: hidden;
 }
 
 .booking-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #EEE;
-    padding-bottom: 15px;
-    gap: 15px;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #d0d7de;
+    gap: 16px;
+    transition: background 0.1s;
+}
+
+.booking-item:last-child {
+    border-bottom: none;
+}
+
+.booking-item:hover {
+    background: #f6f8fa;
 }
 
 .booking-item .info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .user-name {
-    font-weight: 700;
-    display: block;
-}
-
-.booking-detail {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.note {
-    font-size: 0.85rem;
-    margin-top: 5px;
-    color: #555;
-}
-
-.actions {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2328;
     display: flex;
+    align-items: center;
     gap: 8px;
 }
 
+.booking-detail {
+    font-size: 12px;
+    color: #57606a;
+}
+
+.note {
+    font-size: 12px;
+    color: #57606a;
+    background: #f6f8fa;
+    border-radius: 4px;
+    padding: 3px 8px;
+    border-left: 3px solid #d0d7de;
+    margin-top: 2px;
+    display: inline-block;
+}
+
+/* Status Badges (Like GitHub Labels) */
+.badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.badge-pending {
+    background: #fff8c5;
+    color: #7d4e00;
+    border: 1px solid #f5c518;
+}
+
+.badge-approved {
+    background: #dafbe1;
+    color: #116329;
+    border: 1px solid #82e09b;
+}
+
+.badge-rejected {
+    background: #ffebe9;
+    color: #82071e;
+    border: 1px solid #ffc1ba;
+}
+
+/* 動作按鈕群 */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .btn-approve {
-    background: var(--status-available);
+    background: #1a7f37;
     color: #fff;
     border: none;
-    padding: 8px 16px;
+    padding: 6px 14px;
     border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-approve:hover {
+    background: #156430;
 }
 
 .btn-reject {
-    background: #DC3545;
+    background: #fff;
+    color: #cf222e;
+    border: 1px solid #d0d7de;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-reject:hover {
+    background: #ffebe9;
+    border-color: #cf222e;
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: #57606a;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-delete:hover {
+    background: #ffebe9;
+    color: #cf222e;
+}
+
+/* 空白狀態 */
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #57606a;
+}
+
+.empty-state svg {
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2328;
+    margin-bottom: 4px;
+}
+
+.empty-state small {
+    font-size: 13px;
+    color: #57606a;
+}
+
+/* =============================================
+   手動新增表單
+   ============================================= */
+.gh-form-card {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 24px;
+    max-width: 640px;
+}
+
+.gh-form-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2328;
+    margin-bottom: 4px;
+}
+
+.gh-form-subtitle {
+    font-size: 13px;
+    color: #57606a;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #d0d7de;
+}
+
+.gh-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex: 1;
+}
+
+.gh-form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.gh-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2328;
+}
+
+.gh-input {
+    padding: 6px 12px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1f2328;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+}
+
+.gh-input:focus {
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+}
+
+.gh-form-actions {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #d0d7de;
+}
+
+.gh-btn-green {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #1a7f37;
     color: #fff;
     border: none;
-    padding: 8px 16px;
     border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.15s;
+}
+
+.gh-btn-green:hover {
+    background: #156430;
+}
+
+/* =============================================
+   RWD 行動端適配
+   ============================================= */
+@media (max-width: 600px) {
+    .gh-repo-path {
+        font-size: 13px;
+    }
+
+    .gh-nav-tag {
+        display: none;
+    }
+
+    .gh-tab {
+        padding: 10px 10px;
+        font-size: 12px;
+    }
+
+    .gh-form-row {
+        flex-direction: column;
+    }
+
+    .booking-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
