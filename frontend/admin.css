@@ -1,0 +1,120 @@
+.admin-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.admin-section {
+    background: #FFF;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    margin-bottom: 15px;
+    color: var(--primary);
+    border-left: 5px solid var(--primary);
+    padding-left: 12px;
+}
+
+.booking-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.admin-input {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px;
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-refresh {
+    background: #EEE;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+/* 列表樣式 */
+.booking-table {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #EEE;
+    padding-bottom: 15px;
+    gap: 15px;
+}
+
+.booking-item .info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 700;
+    display: block;
+}
+
+.booking-detail {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.note {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    color: #555;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-approve {
+    background: var(--status-available);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-reject {
+    background: #DC3545;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}

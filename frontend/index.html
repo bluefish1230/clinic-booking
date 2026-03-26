@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>官方帳號預約系統</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>服務預約</h1>
+      <p>請選擇您的預約日期與時段</p>
+    </header>
+
+    <div class="calendar-section">
+      <div class="calendar-header">
+        <h2 id="current-month">2026年3月</h2>
+        <div class="nav-btns">
+            <!-- 導覽按鈕 (省略) -->
+        </div>
+      </div>
+      <div id="calendar-grid" class="calendar-days">
+        <!-- 分鐘會動態生成，此處預展示 -->
+        <span class="calendar-day-label">日</span><span class="calendar-day-label">一</span><span class="calendar-day-label">二</span><span class="calendar-day-label">三</span><span class="calendar-day-label">四</span><span class="calendar-day-label">五</span><span class="calendar-day-label">六</span>
+        <!-- 日期格子 -->
+      </div>
+    </div>
+
+    <div class="slots-section" id="slots-area">
+      <div class="section-title">
+        <span>預約時段鎖定 (1小時/位)</span>
+        <span id="selected-date" style="font-size: 0.8rem; color: var(--primary);">2026-03-26</span>
+      </div>
+      <div class="slots-grid" id="slots-container">
+        <!-- 10:00 - 11:00 -->
+        <!-- 11:00 - 12:00 -->
+        <!-- (休息 12-14) -->
+        <!-- 14:00 - 15:00... -->
+      </div>
+    </div>
+
+    <div class="form-section">
+      <textarea id="booking-note" placeholder="在此輸入預約備註 (例如服務內容、人數等)..." rows="4"></textarea>
+      <button class="btn-book" onclick="submitBooking()">確認預約 (待核定)</button>
+    </div>
+    
+    <div id="admin-entrance" style="margin-top:20px; text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
+        管理員入口
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

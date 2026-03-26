@@ -1,0 +1,227 @@
+:root {
+  --primary: #2A6F97;
+  --primary-light: #4A90C2;
+  --bg-main: #F4F7FB;
+  --card-bg: #FFFFFF;
+  --text-main: #333333;
+  --text-muted: #888888;
+  --status-available: #4CAF50;
+  --status-booked: #E0E0E0;
+  --status-pending: #FF9800;
+  --radius-lg: 20px;
+  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+header {
+  padding-bottom: 20px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+header p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Calendar Section */
+.calendar-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 25px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  text-align: center;
+}
+
+.calendar-day-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 5px;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  background-color: var(--primary-light);
+  color: #fff;
+}
+
+.calendar-day.active {
+  background-color: var(--primary);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Slots Section */
+.slots-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--text-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.slot-card {
+  border: 2px solid #EEE;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.slot-card:hover:not(.disabled) {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-card.selected {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.slot-card.disabled {
+  background-color: var(--status-booked);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.slot-card .time {
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+}
+
+.slot-card .status-label {
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
+
+.slot-card.selected .status-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Form Styles */
+.form-section {
+  margin-top: 25px;
+}
+
+textarea {
+  width: 100%;
+  border: 2px solid #EEE;
+  border-radius: 12px;
+  padding: 15px;
+  resize: none;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+textarea:focus {
+  border-color: var(--primary);
+}
+
+.btn-book {
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(42, 111, 151, 0.3);
+  transition: all 0.3s;
+}
+
+.btn-book:hover {
+  background: var(--primary-light);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(42, 111, 151, 0.4);
+}
+
+.btn-book:active {
+  transform: translateY(0);
+}
+
+/* Badge Styles */
+.badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-pending { background: #FFF4E5; color: #B45D00; }
+.badge-approved { background: #E7F9ED; color: #1E7E34; }

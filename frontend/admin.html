@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理後台 - 預約管理系統</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>管理員後台預約系統</h1>
+            <button class="btn-refresh" onclick="fetchBookings()">更新清單</button>
+        </header>
+
+        <!-- 快速新增功能 -->
+        <div class="admin-section create-booking">
+            <h2 class="section-title">手動新增預約</h2>
+            <div class="booking-row">
+                <input type="text" id="manual-name" placeholder="姓名 (可手動或選取)" class="admin-input">
+                <input type="date" id="manual-date" class="admin-input">
+                <select id="manual-slot" class="admin-input">
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="15:00">15:00</option>
+                    <!-- 更多選項 -->
+                </select>
+                <button class="btn-primary" onclick="adminCreateBooking()">新增</button>
+            </div>
+        </div>
+
+        <!-- 預約列表 -->
+        <div class="admin-section bookings-list">
+            <h2 class="section-title">待處理預約</h2>
+            <div id="pending-list" class="booking-table">
+                <!-- 這裡會動態顯示待審核的預約 -->
+            </div>
+        </div>
+
+        <div class="admin-section bookings-list">
+            <h2 class="section-title">所有預約時程總覽</h2>
+            <div id="all-list" class="booking-table">
+                <!-- 這裡會顯示已核核定或歷史紀錄 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>
