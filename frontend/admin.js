@@ -83,8 +83,9 @@ function createBookingItem(booking) {
             ${booking.status === 'pending' ? `
                 <button class="btn-approve" onclick="updateStatus(${booking.id}, 'approved')">核准</button>
                 <button class="btn-reject" onclick="updateStatus(${booking.id}, 'rejected')">拒絕</button>
+                <button class="btn-delete" style="margin-left: 8px;" onclick="deleteBooking(${booking.id})">刪除</button>
             ` : `<button class="btn-delete" onclick="deleteBooking(${booking.id})">刪除</button>`}
-            ${booking.line_user_id ? `<button class="gh-btn-outline" style="border-color: #0969da; color: #0969da; padding: 4px 8px; font-size: 11px;" onclick="contactUser('${booking.line_user_id}', '${booking.display_name}')">聯絡</button>` : ''}
+            ${booking.line_user_id ? `<button class="gh-btn-outline" style="border-color: #0969da; color: #0969da; padding: 4px 8px; font-size: 11px; margin-left: 8px;" onclick="contactUser('${booking.line_user_id}', '${booking.display_name}')">聯絡</button>` : ''}
         </div>
     `;
     return item;
