@@ -185,6 +185,7 @@ async function submitBooking() {
         body: JSON.stringify({
             line_user_id: userData.userId,
             display_name: name,
+            picture_url: userData.pictureUrl || '',
             booking_date: selectedDate,
             slot_time: selectedSlot,
             note: document.getElementById('booking-note').value

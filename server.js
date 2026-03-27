@@ -65,9 +65,13 @@ async function sendPushNotification(to, text) {
         console.warn('⚠️ 尚未設定 LINE_CHANNEL_ACCESS_TOKEN，跳過推播');
         return;
     }
+
+    // 若 text 為純文字則包裝，若為物件則直接作為 messages 的內容 (支援 Flex Message)
+    const messages = typeof text === 'string' ? [{ type: 'text', text: text }] : [text];
+
     const data = JSON.stringify({
         to: to,
-        messages: [{ type: 'text', text: text }]
+        messages: messages
     });
 
     const options = {
@@ -145,17 +149,69 @@ app.get('/api/slots/:date', async (req, res) => {
 // 使用者提交預約
 app.post('/api/bookings', async (req, res) => {
     try {
-        const { line_user_id, display_name, booking_date, slot_time, note } = req.body;
+        const { line_user_id, display_name, picture_url, booking_date, slot_time, note } = req.body;
         const [result] = await pool.execute(
             `INSERT INTO bookings (line_user_id, display_name, booking_date, slot_time, note) VALUES (?, ?, ?, ?, ?)`,
             [line_user_id, display_name, booking_date, slot_time, note]
         );
 
-        // 通知管理員有新預約
+        // 通知管理員有新預約 (Flex Message)
         if (LINE_ADMIN_USER_ID) {
             const dateStr = new Date(booking_date).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
-            const adminMsg = `【新預約通知】\n預約人：${display_name}\n日期：${dateStr}\n時段：${slot_time}${note ? '\n備註：' + note : ''}\n\n請前往後台審核。`;
-            await sendPushNotification(LINE_ADMIN_USER_ID, adminMsg);
+
+            const flexMsg = {
+                type: 'flex',
+                altText: `【新預約通知】來自 ${display_name}`,
+                contents: {
+                    type: 'bubble',
+                    body: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'md',
+                        contents: [
+                            { type: 'text', text: '🔔 新預約通知', weight: 'bold', size: 'lg', color: '#1DB446' },
+                            {
+                                type: 'box',
+                                layout: 'horizontal',
+                                spacing: 'md',
+                                margin: 'md',
+                                // 此處將動態根據有無頭像填入內容
+                                contents: []
+                            },
+                            { type: 'text', text: '請前往後台審核。', margin: 'lg', size: 'sm', color: '#999999' }
+                        ]
+                    }
+                }
+            };
+
+            const infoBox = flexMsg.contents.body.contents[1].contents;
+
+            if (picture_url && picture_url.length > 0) {
+                infoBox.push({
+                    type: 'image',
+                    url: picture_url,
+                    flex: 1,
+                    size: 'sm',
+                    aspectMode: 'cover',
+                    aspectRatio: '1:1',
+                    gravity: 'center'
+                });
+            }
+
+            infoBox.push({
+                type: 'box',
+                layout: 'vertical',
+                flex: 4,
+                spacing: 'sm',
+                contents: [
+                    { type: 'text', text: `預約人：${display_name}`, weight: 'bold', wrap: true },
+                    { type: 'text', text: `日期：${dateStr}`, size: 'sm', color: '#666666' },
+                    { type: 'text', text: `時段：${slot_time}`, size: 'sm', color: '#666666' },
+                    ...(note ? [{ type: 'text', text: `備註：${note}`, size: 'sm', color: '#666666', wrap: true }] : [])
+                ]
+            });
+
+            await sendPushNotification(LINE_ADMIN_USER_ID, flexMsg);
         }
 
         res.json({ id: result.insertId, status: 'pending' });
