@@ -22,6 +22,7 @@ const dbConfig = {
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.PASSWORD || '0811';
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || ''; // 請將 Token 放入環境變數
+const LINE_ADMIN_USER_ID = process.env.LINE_ADMIN_USER_ID || ''; // 管理員的 LINE User ID
 
 let pool;
 
@@ -149,6 +150,14 @@ app.post('/api/bookings', async (req, res) => {
             `INSERT INTO bookings (line_user_id, display_name, booking_date, slot_time, note) VALUES (?, ?, ?, ?, ?)`,
             [line_user_id, display_name, booking_date, slot_time, note]
         );
+
+        // 通知管理員有新預約
+        if (LINE_ADMIN_USER_ID) {
+            const dateStr = new Date(booking_date).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
+            const adminMsg = `【新預約通知】\n預約人：${display_name}\n日期：${dateStr}\n時段：${slot_time}${note ? '\n備註：' + note : ''}\n\n請前往後台審核。`;
+            await sendPushNotification(LINE_ADMIN_USER_ID, adminMsg);
+        }
+
         res.json({ id: result.insertId, status: 'pending' });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -188,15 +197,13 @@ app.patch('/api/bookings/:id', async (req, res) => {
     // 3. 發送 LINE 通知 (如果有 User ID)
     if (booking.line_user_id) {
         let message = '';
+        const dateStr = new Date(booking.booking_date).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
         if (customMessage) {
             message = customMessage;
-        } else {
-            const dateStr = new Date(booking.booking_date).toLocaleDateString('zh-TW');
-            if (status === 'approved') {
-                message = `【預約通知】您的預約已審核通過！\n日期：${dateStr}\n時段：${booking.slot_time}\n期待您的光臨。`;
-            } else if (status === 'rejected') {
-                message = `【預約通知】很抱歉，您的預約未通過。\n日期：${dateStr}\n時段：${booking.slot_time}\n如有疑問請致電診所。`;
-            }
+        } else if (status === 'approved') {
+            message = `✅ 【預約確認通知】\n\n您好，${booking.display_name}！\n您的預約已通過審核。\n\n📅 日期：${dateStr}\n🕐 時段：${booking.slot_time}\n\n請準時前來，期待您的光臨！`;
+        } else if (status === 'rejected') {
+            message = `❌ 【預約通知】\n\n很抱歉，您的預約申請未通過。\n\n📅 日期：${dateStr}\n🕐 時段：${booking.slot_time}\n\n如有疑問請致電診所，謝謝。`;
         }
         if (message) await sendPushNotification(booking.line_user_id, message);
     }
