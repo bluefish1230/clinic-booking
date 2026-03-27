@@ -15,13 +15,21 @@ let selectedDate = new Date().toISOString().split('T')[0];
 let selectedSlot = null;
 let currentDayStatus = { isDayOpen: true, bookings: [] };
 
-// 渲染時段
+// Helper: 檢查時段是否早於「現在 + 4 小時」
+function isTooEarly(dateStr, slotTime) {
+    const now = new Date();
+    const target = new Date(`${dateStr}T${slotTime}:00`);
+    const bufferTime = now.getTime() + (4 * 60 * 60 * 1000); // 現在 + 4 小時
+    return target.getTime() < bufferTime;
+}
+
+// 獲取時段
 async function fetchSlots() {
     try {
         const response = await fetch(`/api/slots/${selectedDate}`);
         currentDayStatus = await response.json();
         renderSlots();
-        renderCalendar(); // 刷新日曆狀態
+        renderCalendar();
     } catch (err) {
         console.error("無法取得時段資料", err);
     }
@@ -39,17 +47,26 @@ function renderSlots() {
     const bookedSlots = currentDayStatus.bookings.map(b => b.slot_time);
 
     slotsConfig.forEach(slot => {
+        // 規則 1: 檢查是否已被他人預約
         const isBooked = bookedSlots.includes(slot.time);
+
+        // 規則 2: 檢查是否符合「現在時間 + 4 小時」緩衝
+        const isPast = isTooEarly(selectedDate, slot.time);
+
+        const isDisabled = isBooked || isPast;
+
         const card = document.createElement('div');
-        card.className = `slot-card ${isBooked ? 'disabled' : ''}`;
+        card.className = `slot-card ${isDisabled ? 'disabled' : ''}`;
         if (selectedSlot === slot.time) card.classList.add('selected');
+
+        let statusText = isBooked ? '● 已額滿' : (isPast ? '● 預約截止' : '○ 可預約');
 
         card.innerHTML = `
             <span class="time">${slot.time}</span>
-            <span class="status-label">${isBooked ? '● 已額滿' : '○ 可預約'}</span>
+            <span class="status-label">${statusText}</span>
         `;
 
-        if (!isBooked) {
+        if (!isDisabled) {
             card.onclick = () => {
                 selectedSlot = slot.time;
                 renderSlots();
@@ -65,22 +82,26 @@ function renderCalendar() {
     grid.innerHTML = '';
 
     const today = new Date();
-    for (let i = 0; i < 21; i++) {
+    // 規則 3: 顯示 60 天內 (約 2 個月) 的日曆
+    for (let i = 0; i < 60; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
         const dayOfWeek = d.getDay();
-        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        const isFirstDayOfMonth = d.getDate() === 1;
 
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
         if (dateStr === selectedDate) dayEl.classList.add('active');
-        if (isWeekend) dayEl.style.color = '#cf222e'; // 週末標註紅色
+        if (dayOfWeek === 0 || dayOfWeek === 6) dayEl.style.color = '#cf222e';
 
-        dayEl.innerText = d.getDate();
+        // 如果是月份的第一天，顯示月份名稱以便辨識
+        const monthLabel = isFirstDayOfMonth ? `<span style="font-size: 10px; display: block; margin-bottom: -4px;">${d.getMonth() + 1}月</span>` : '';
+        dayEl.innerHTML = `${monthLabel}${d.getDate()}`;
+
         dayEl.onclick = () => {
             selectedDate = dateStr;
-            selectedSlot = null; // 切換日期清空選擇
+            selectedSlot = null;
             document.getElementById('selected-date').innerText = selectedDate;
             fetchSlots();
         };
@@ -91,11 +112,8 @@ function renderCalendar() {
 async function submitBooking() {
     if (!selectedSlot) return alert("請先選擇一個預約時段！");
 
-    // 取得 LINE 使用者資訊 (此處模擬)
-    const lineUser = {
-        line_user_id: 'U12345678',
-        display_name: '測試用戶'
-    };
+    // LINE 使用者資訊模擬 (正式環境會從 liff.getProfile 取得)
+    const lineUser = { line_user_id: 'U12345678', display_name: '測試用戶' };
 
     const bookingData = {
         line_user_id: lineUser.line_user_id,
