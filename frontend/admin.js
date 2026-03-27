@@ -157,4 +157,80 @@ async function deleteCalendarSetting(dateStr) {
     fetchCalendarSettings();
 }
 
+// =============================================
+// 手動新增預約邏輯
+// =============================================
+document.getElementById('manual-date').addEventListener('change', async (e) => {
+    const date = e.target.value;
+    if (!date) return;
+    const res = await fetch(`/api/slots/${date}`);
+    const data = await res.json();
+    const select = document.getElementById('manual-slot');
+    select.innerHTML = '';
+
+    if (!data.isDayOpen) {
+        select.innerHTML = '<option value="">本日休診</option>';
+        return;
+    }
+
+    const allSlots = ["10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
+    const bookedSlots = data.bookings.map(b => b.slot_time.substring(0, 5));
+
+    let hasAvailable = false;
+    allSlots.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot;
+        if (bookedSlots.includes(slot)) {
+            option.textContent = `${slot} (已額滿)`;
+            option.disabled = true;
+        } else {
+            option.textContent = slot;
+            hasAvailable = true;
+        }
+        select.appendChild(option);
+    });
+
+    if (!hasAvailable) {
+        select.innerHTML = '<option value="">全日額滿</option>';
+    }
+});
+
+async function adminCreateBooking() {
+    const name = document.getElementById('manual-name').value.trim();
+    const date = document.getElementById('manual-date').value;
+    const slot = document.getElementById('manual-slot').value;
+
+    if (!name || !date || !slot) return alert("請填妥所有欄位，並選擇有效時段！");
+
+    // 1. 建立預約
+    const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            line_user_id: '', // 手動新增無 LINE ID
+            display_name: name,
+            booking_date: date,
+            slot_time: slot,
+            note: '櫃檯手動新增'
+        })
+    });
+    const result = await res.json();
+
+    if (result.id) {
+        // 2. 將此筆預約自動轉為 approved (繞過通知)
+        await fetch(`/api/bookings/${result.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved', pwd: adminPwd, customMessage: 'NO_NOTIFY_MANUAL' })
+        });
+        alert('預約建立成功！');
+        document.getElementById('manual-name').value = '';
+        document.getElementById('manual-date').value = '';
+        document.getElementById('manual-slot').innerHTML = '';
+        fetchBookings();
+    } else {
+        alert('發生失敗，請稍後再試。');
+    }
+}
+
 fetchBookings();
