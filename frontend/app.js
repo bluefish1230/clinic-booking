@@ -180,8 +180,6 @@ async function submitBooking() {
     if (!name) return alert("請輸入掛號人姓名");
 
     const phone = document.getElementById('booking-phone').value.trim();
-    if (!phone) return alert("請填寫手機號碼");
-
     const lineIdStr = document.getElementById('booking-line-id').value.trim();
 
     const res = await fetch('/api/bookings', {
