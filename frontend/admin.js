@@ -74,6 +74,9 @@ function createBookingItem(booking) {
         <div class="info">
             <span class="user-name">${booking.display_name} <span class="badge ${badgeClass}">${statusText}</span></span>
             <span class="booking-detail">${booking.booking_date.split('T')[0]} | ${booking.slot_time}</span>
+            <span class="booking-detail" style="margin-top: 4px; color: #57606a;">
+                📱 手機：${booking.phone || '未提供'} | 第三人LINE：${booking.line_id || '未提供'}
+            </span>
             ${booking.note ? `<span class="note">${booking.note}</span>` : ''}
         </div>
         <div class="actions">
@@ -312,6 +315,8 @@ async function adminCreateBooking() {
         body: JSON.stringify({
             line_user_id: '', // 手動新增無 LINE ID
             display_name: name,
+            phone: '管理員建立', // 暫代手機
+            line_id: '',
             booking_date: date,
             slot_time: slot,
             note: '櫃檯手動新增'

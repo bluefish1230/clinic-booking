@@ -143,7 +143,12 @@
       </div>
 
       <div class="form-section">
-        <textarea id="booking-note" placeholder="備註內容 (選填)..." rows="3"></textarea>
+        <input type="tel" id="booking-phone" placeholder="手機號碼 (必填)"
+          style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; font-size: 1rem; box-sizing: border-box;">
+        <input type="text" id="booking-line-id" placeholder="LINE ID (選填)"
+          style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; font-size: 1rem; box-sizing: border-box;">
+        <textarea id="booking-note" placeholder="備註內容 (選填)..." rows="3"
+          style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; font-size: 1rem; box-sizing: border-box;"></textarea>
         <button class="btn-book" onclick="submitBooking()">確認預約申請</button>
       </div>
     </div>

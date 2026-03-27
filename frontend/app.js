@@ -179,12 +179,19 @@ async function submitBooking() {
     const name = document.getElementById('patient-name').value.trim();
     if (!name) return alert("請輸入掛號人姓名");
 
+    const phone = document.getElementById('booking-phone').value.trim();
+    if (!phone) return alert("請填寫手機號碼");
+
+    const lineIdStr = document.getElementById('booking-line-id').value.trim();
+
     const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             line_user_id: userData.userId,
             display_name: name,
+            phone: phone,
+            line_id: lineIdStr,
             picture_url: userData.pictureUrl || '',
             booking_date: selectedDate,
             slot_time: selectedSlot,

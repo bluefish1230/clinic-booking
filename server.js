@@ -40,6 +40,11 @@ async function initDB() {
             created_at   DATETIME    DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    // 無痛加上新欄位
+    try { await pool.execute(`ALTER TABLE bookings ADD COLUMN phone VARCHAR(20) DEFAULT ''`); } catch (e) { /* ignore if exists */ }
+    try { await pool.execute(`ALTER TABLE bookings ADD COLUMN line_id VARCHAR(50) DEFAULT ''`); } catch (e) { /* ignore if exists */ }
+
     await pool.execute(`
         CREATE TABLE IF NOT EXISTS calendar_settings (
             target_date DATE PRIMARY KEY,
@@ -149,10 +154,10 @@ app.get('/api/slots/:date', async (req, res) => {
 // 使用者提交預約
 app.post('/api/bookings', async (req, res) => {
     try {
-        const { line_user_id, display_name, picture_url, booking_date, slot_time, note } = req.body;
+        const { line_user_id, display_name, phone, line_id, picture_url, booking_date, slot_time, note } = req.body;
         const [result] = await pool.execute(
-            `INSERT INTO bookings (line_user_id, display_name, booking_date, slot_time, note) VALUES (?, ?, ?, ?, ?)`,
-            [line_user_id, display_name, booking_date, slot_time, note]
+            `INSERT INTO bookings (line_user_id, display_name, phone, line_id, booking_date, slot_time, note) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [line_user_id, display_name, phone || '', line_id || '', booking_date, slot_time, note]
         );
 
         // 通知管理員有新預約 (Flex Message)
@@ -207,7 +212,9 @@ app.post('/api/bookings', async (req, res) => {
                     { type: 'text', text: `預約人：${display_name}`, weight: 'bold', wrap: true },
                     { type: 'text', text: `日期：${dateStr}`, size: 'sm', color: '#666666' },
                     { type: 'text', text: `時段：${slot_time}`, size: 'sm', color: '#666666' },
-                    ...(note ? [{ type: 'text', text: `備註：${note}`, size: 'sm', color: '#666666', wrap: true }] : [])
+                    { type: 'text', text: `手機：${phone || '未提供'}`, size: 'sm', color: '#ff6b6b', weight: 'bold' },
+                    ...(line_id ? [{ type: 'text', text: `LINE ID：${line_id}`, size: 'sm', color: '#0969da', weight: 'bold' }] : []),
+                    ...(note ? [{ type: 'text', text: `備註：${note}`, size: 'sm', color: '#666666', wrap: true, margin: 'sm' }] : [])
                 ]
             });
 
