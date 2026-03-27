@@ -29,6 +29,9 @@ function logout() {
     location.reload();
 }
 
+// 存放所有伺服器傳來的預約資料，供行事曆過濾使用
+let globalAllBookings = [];
+
 async function fetchBookings() {
     if (!adminPwd) return;
 
@@ -39,8 +42,12 @@ async function fetchBookings() {
     // 抓取全部
     const resAll = await fetch(`/api/admin/all?pwd=${adminPwd}`);
     const allData = await resAll.json();
+    globalAllBookings = allData; // 存入全域供行事曆與其他分頁使用
 
     renderLists(pendingData, allData);
+    if (document.getElementById('panel-schedule').classList.contains('active')) {
+        renderSchedule();
+    }
 }
 
 function renderLists(pendingBookings, allBookings) {
@@ -112,6 +119,39 @@ async function contactUser(lineId, name) {
     const result = await res.json();
     if (result.success) alert('訊息已成功傳送！');
     else alert('發送失敗，請確認 API 設定。');
+}
+
+// =============================================
+// 行事曆查詢邏輯 (查詢特定日期的所有時間預約)
+// =============================================
+function renderSchedule() {
+    const dateStr = document.getElementById('schedule-date').value;
+    const list = document.getElementById('schedule-list');
+    list.innerHTML = '';
+    if (!dateStr) {
+        list.innerHTML = '<div style="padding: 20px; text-align: center; color: #57606a;">請在上方的日曆選擇日期以查看預約</div>';
+        return;
+    }
+
+    // 過濾出特定日期的預約 (不包含已拒絕與已取消的，因為行事曆是要看真正會來的人)
+    const dailyBookings = globalAllBookings.filter(b =>
+        b.booking_date.split('T')[0] === dateStr &&
+        b.status !== 'cancelled' &&
+        b.status !== 'rejected'
+    );
+
+    if (dailyBookings.length === 0) {
+        list.innerHTML = '<div style="padding: 20px; text-align: center; color: #57606a;">此日期目前沒有任何預約記錄。</div>';
+        return;
+    }
+
+    // 依據時間先後排序
+    dailyBookings.sort((a, b) => a.slot_time.localeCompare(b.slot_time));
+
+    // 將預約元件加入畫面中
+    dailyBookings.forEach(b => {
+        list.appendChild(createBookingItem(b));
+    });
 }
 
 // =============================================

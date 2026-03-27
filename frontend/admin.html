@@ -62,6 +62,7 @@
                         class="gh-tab-count" id="pending-count">0</span></button>
                 <button class="gh-tab" onclick="switchTab('all', this)" id="tab-all">全部預約 <span class="gh-tab-count"
                         id="all-count">0</span></button>
+                <button class="gh-tab" onclick="switchTab('schedule', this)" id="tab-schedule">📅 行事曆</button>
                 <button class="gh-tab" onclick="switchTab('calendar', this)" id="tab-calendar">日曆管理</button>
                 <button class="gh-tab" onclick="switchTab('add', this)" id="tab-add">手動新增</button>
             </nav>
@@ -78,6 +79,18 @@
         <div id="panel-all" class="gh-panel">
             <div class="gh-list-header"><span id="all-header-count">0 筆已確認預約</span></div>
             <div id="all-list" class="gh-list-body"></div>
+        </div>
+
+        <!-- 依日期查詢行事曆 Tab -->
+        <div id="panel-schedule" class="gh-panel">
+            <div class="gh-list-header" style="justify-content: space-between; align-items: center;">
+                <span>查詢特定日期的完整預約名單</span>
+                <input type="date" id="schedule-date" class="gh-input" style="width: auto; margin-left: 10px;"
+                    onchange="renderSchedule()">
+            </div>
+            <div id="schedule-list" class="gh-list-body">
+                <div style="padding: 20px; text-align: center; color: #57606a;">請在上方的日曆選擇日期以查看預約</div>
+            </div>
         </div>
 
         <!-- 日曆管理 Tab -->
@@ -141,6 +154,12 @@
             btn.classList.add('active');
             document.getElementById('panel-' + tabName).classList.add('active');
             if (tabName === 'calendar') fetchCalendarSettings();
+            if (tabName === 'schedule') {
+                if (!document.getElementById('schedule-date').value) {
+                    document.getElementById('schedule-date').value = new Date().toLocaleDateString('en-CA'); // 'YYYY-MM-DD' in local timezone
+                }
+                renderSchedule();
+            }
         }
     </script>
 </body>
