@@ -39,12 +39,12 @@ async function fetchBookings() {
     const resPending = await fetch(`/api/admin/pending?pwd=${adminPwd}`);
     const pendingData = await resPending.json();
 
-    // 抓取全部
     const resAll = await fetch(`/api/admin/all?pwd=${adminPwd}`);
     const allData = await resAll.json();
     globalAllBookings = allData; // 存入全域供行事曆與其他分頁使用
 
     renderLists(pendingData, allData);
+    renderPatients(); // 計算與渲染病患人數
     if (document.getElementById('panel-schedule').classList.contains('active')) {
         renderSchedule();
     }
@@ -151,6 +151,69 @@ function renderSchedule() {
     // 將預約元件加入畫面中
     dailyBookings.forEach(b => {
         list.appendChild(createBookingItem(b));
+    });
+}
+
+// =============================================
+// 病患名單 (CRM 客戶關係管理)
+// =============================================
+function renderPatients() {
+    const list = document.getElementById('patients-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    // 整理獨特的病患名單 (依據 line_user_id)
+    const uniqueUsers = {};
+    globalAllBookings.forEach(b => {
+        if (b.line_user_id) {
+            if (!uniqueUsers[b.line_user_id]) {
+                uniqueUsers[b.line_user_id] = {
+                    lineId: b.line_user_id,
+                    name: b.display_name,
+                    bookingCount: 1,
+                    lastBooking: b.booking_date.split('T')[0]
+                };
+            } else {
+                uniqueUsers[b.line_user_id].bookingCount++;
+                const bDateStr = b.booking_date.split('T')[0];
+                if (bDateStr > uniqueUsers[b.line_user_id].lastBooking) {
+                    uniqueUsers[b.line_user_id].lastBooking = bDateStr;
+                }
+                // 更新名字為最新一次預約的名字
+                uniqueUsers[b.line_user_id].name = b.display_name;
+            }
+        }
+    });
+
+    const usersArray = Object.values(uniqueUsers);
+
+    const countBadge = document.getElementById('patients-count');
+    if (countBadge) countBadge.textContent = usersArray.length;
+
+    const headerCount = document.getElementById('patients-header-count');
+    if (headerCount) headerCount.textContent = `共 ${usersArray.length} 位曾預約過的 LINE 病患`;
+
+    if (usersArray.length === 0) {
+        list.innerHTML = '<div style="padding: 20px; text-align: center; color: #57606a;">目前尚無病患資料</div>';
+        return;
+    }
+
+    // 依據最後預約時間排序 (由新到舊)
+    usersArray.sort((a, b) => new Date(b.lastBooking) - new Date(a.lastBooking));
+
+    usersArray.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'booking-item';
+        item.innerHTML = `
+            <div class="info">
+                <span class="user-name">${u.name} <span class="badge badge-approved" style="background-color: #2da44e;">總計預約: ${u.bookingCount} 次</span></span>
+                <span class="booking-detail">最近一次預約：${u.lastBooking}</span>
+            </div>
+            <div class="actions">
+                <button class="gh-btn-outline" style="border-color: #0969da; color: #0969da; padding: 4px 8px; font-size: 11px;" onclick="contactUser('${u.lineId}', '${u.name}')">主動聯絡</button>
+            </div>
+        `;
+        list.appendChild(item);
     });
 }
 
