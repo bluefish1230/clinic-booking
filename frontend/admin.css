@@ -138,6 +138,7 @@ a {
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.3px;
+    white-space: nowrap;
 }
 
 .gh-navbar-right {
@@ -177,7 +178,10 @@ a {
 .gh-tab-bar {
     background: #fff;
     border-bottom: 1px solid #d0d7de;
-    padding: 0 16px;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .gh-tab-bar-inner {
@@ -188,6 +192,16 @@ a {
 .gh-tabs {
     display: flex;
     gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+.gh-tabs::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
 }
 
 .gh-tab {
@@ -551,3 +565,4 @@ a {
         align-items: flex-start;
     }
 }
+@media (max-width: 600px) { .gh-navbar { height: auto; padding: 12px 16px; } .gh-navbar-inner { flex-direction: column; align-items: flex-start; gap: 12px; } .gh-navbar-right { width: 100%; justify-content: space-between; gap: 10px; } .gh-navbar-right button { flex: 1; justify-content: center; } .gh-repo-path { font-size: 13px; } .gh-nav-tag, .gh-badge-public { display: none; } .gh-tabs { padding: 0 8px; flex-wrap: nowrap; overflow-x: auto; } .gh-tab { padding: 12px 10px; font-size: 12px; flex-shrink: 0; } .gh-main { margin: 16px auto; } .gh-form-row { flex-direction: column; } .booking-item { flex-direction: column; align-items: flex-start; gap: 8px; } .booking-item .actions { width: 100%; justify-content: flex-start; border-top: 1px solid #f6f8fa; padding-top: 8px; } }

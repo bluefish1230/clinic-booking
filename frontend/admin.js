@@ -74,18 +74,38 @@ function createBookingItem(booking) {
                 <button class="btn-approve" onclick="updateStatus(${booking.id}, 'approved')">核准</button>
                 <button class="btn-reject" onclick="updateStatus(${booking.id}, 'rejected')">拒絕</button>
             ` : `<button class="btn-delete" onclick="deleteBooking(${booking.id})">刪除</button>`}
+            ${booking.line_user_id ? `<button class="gh-btn-outline" style="border-color: #0969da; color: #0969da; padding: 4px 8px; font-size: 11px;" onclick="contactUser('${booking.line_user_id}', '${booking.display_name}')">聯絡</button>` : ''}
         </div>
     `;
     return item;
 }
 
 async function updateStatus(id, status) {
+    let customMessage = '';
+    if (status === 'rejected') {
+        customMessage = prompt('請輸入退回原因 (可不填，將使用預設通知):');
+    }
+
     await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, pwd: adminPwd }) // 這裡視後端邏輯調整
+        body: JSON.stringify({ status, pwd: adminPwd, customMessage })
     });
     fetchBookings();
+}
+
+async function contactUser(lineId, name) {
+    const msg = prompt(`發送自訂訊息給 ${name}:`);
+    if (!msg) return;
+
+    const res = await fetch('/api/admin/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pwd: adminPwd, line_user_id: lineId, message: msg })
+    });
+    const result = await res.json();
+    if (result.success) alert('訊息已成功傳送！');
+    else alert('發送失敗，請確認 API 設定。');
 }
 
 // =============================================

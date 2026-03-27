@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const https = require('https');
 
 const app = express();
 
@@ -19,7 +20,8 @@ const dbConfig = {
     connectionLimit: 10,
 };
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '1234';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.PASSWORD || '0811';
+const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || ''; // 請將 Token 放入環境變數
 
 let pool;
 
@@ -52,6 +54,45 @@ function isDefaultClosed(dateString) {
     if (day === 0 || day === 6) return true;
     const holidays = ['2026-04-03', '2026-04-04', '2026-04-05', '2026-05-01', '2026-06-19'];
     return holidays.includes(dateString);
+}
+
+// ---------------------------------------------
+// LINE Messaging API 輔助函數
+// ---------------------------------------------
+async function sendPushNotification(to, text) {
+    if (!LINE_CHANNEL_ACCESS_TOKEN) {
+        console.warn('⚠️ 尚未設定 LINE_CHANNEL_ACCESS_TOKEN，跳過推播');
+        return;
+    }
+    const data = JSON.stringify({
+        to: to,
+        messages: [{ type: 'text', text: text }]
+    });
+
+    const options = {
+        hostname: 'api.line.me',
+        port: 443,
+        path: '/v2/bot/message/push',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+            'Content-Length': data.length
+        }
+    };
+
+    const req = https.request(options, (res) => {
+        let responseBody = '';
+        res.on('data', (d) => responseBody += d);
+        res.on('end', () => {
+            if (res.statusCode === 200) console.log('✅ LINE 推播成功');
+            else console.error('❌ LINE 推播失敗:', responseBody);
+        });
+    });
+
+    req.on('error', (e) => console.error('❌ LINE 推播發生錯誤:', e));
+    req.write(data);
+    req.end();
 }
 
 // ---------------------------------------------
@@ -133,10 +174,43 @@ app.get('/api/admin/all', async (req, res) => {
 });
 
 app.patch('/api/bookings/:id', async (req, res) => {
-    const { pwd, status } = req.body;
+    const { pwd, status, customMessage } = req.body;
     if (pwd !== ADMIN_PASSWORD) return res.status(403).send('Forbidden');
+
+    // 1. 取得預約及使用者資訊
+    const [rows] = await pool.execute(`SELECT * FROM bookings WHERE id = ?`, [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: '查無此筆預約' });
+    const booking = rows[0];
+
+    // 2. 更新資料庫
     const [result] = await pool.execute(`UPDATE bookings SET status = ? WHERE id = ?`, [status, req.params.id]);
+
+    // 3. 發送 LINE 通知 (如果有 User ID)
+    if (booking.line_user_id) {
+        let message = '';
+        if (customMessage) {
+            message = customMessage;
+        } else {
+            const dateStr = new Date(booking.booking_date).toLocaleDateString('zh-TW');
+            if (status === 'approved') {
+                message = `【預約通知】您的預約已審核通過！\n日期：${dateStr}\n時段：${booking.slot_time}\n期待您的光臨。`;
+            } else if (status === 'rejected') {
+                message = `【預約通知】很抱歉，您的預約未通過。\n日期：${dateStr}\n時段：${booking.slot_time}\n如有疑問請致電診所。`;
+            }
+        }
+        if (message) await sendPushNotification(booking.line_user_id, message);
+    }
+
     res.json({ updated: result.affectedRows });
+});
+
+app.post('/api/admin/message', async (req, res) => {
+    const { pwd, line_user_id, message } = req.body;
+    if (pwd !== ADMIN_PASSWORD) return res.status(403).send('Forbidden');
+    if (!line_user_id || !message) return res.status(400).send('Bad Request');
+
+    await sendPushNotification(line_user_id, message);
+    res.json({ success: true });
 });
 
 app.delete('/api/bookings/:id', async (req, res) => {
