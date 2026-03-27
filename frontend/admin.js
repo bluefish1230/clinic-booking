@@ -35,11 +35,11 @@ let globalAllBookings = [];
 async function fetchBookings() {
     if (!adminPwd) return;
 
-    // 抓取待審核
-    const resPending = await fetch(`/api/admin/pending?pwd=${adminPwd}`);
+    // 抓取待審核 (加入 no-store 避免瀏覽器快取)
+    const resPending = await fetch(`/api/admin/pending?pwd=${adminPwd}`, { cache: 'no-store' });
     const pendingData = await resPending.json();
 
-    const resAll = await fetch(`/api/admin/all?pwd=${adminPwd}`);
+    const resAll = await fetch(`/api/admin/all?pwd=${adminPwd}`, { cache: 'no-store' });
     const allData = await resAll.json();
     globalAllBookings = allData; // 存入全域供行事曆與其他分頁使用
 
@@ -221,7 +221,7 @@ function renderPatients() {
 // 日曆例外設定邏輯
 // =============================================
 async function fetchCalendarSettings() {
-    const res = await fetch('/api/admin/calendar-all');
+    const res = await fetch('/api/admin/calendar-all', { cache: 'no-store' });
     const settings = await res.json();
     const list = document.getElementById('calendar-settings-list');
     list.innerHTML = '';
