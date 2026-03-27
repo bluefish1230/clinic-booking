@@ -13,10 +13,11 @@
 - **提交申請**：資料寫入資料庫，狀態標記為 `pending` (待審核)。
 
 ### 2. 管理員端 (Admin Console)
-- **登入驗證**：進入 `/admin.html` 需輸入管理員密碼（由環境變數控管）。
-- **審核預約**：
-  - **核定 (Approve)**：將預約狀態轉為正式紀錄。
-  - **退回 (Reject)**：釋出該時段供他人重新預約。
+- **登入驗證**：進入 `/admin.html` 需輸入管理員密碼（支援 `ADMIN_PASSWORD` 或 `PASSWORD` 環境變數）。
+- **審核預約與通知**：
+  - **核定 (Approve)**：將預約狀態轉為正式紀錄，**系統將自動發送 LINE 訊息通知使用者預約成功**。
+  - **退回 (Reject)**：釋出該時段供他人重新預約，管理員可自訂退回原因，**系統將自動發送 LINE 訊息通知使用者退回原因**。
+- **主動聯絡**：管理員可點擊「聯絡」按鈕，主動傳送自訂的 LINE 訊息給特定預約者。
 - **日曆管理**：
   - **強制開放**：讓特定休假日常態開放（如：視訊特別門診）。
   - **強制關閉**：設定特定日期為休診日（如：醫師出國或工程維修）。
@@ -39,11 +40,16 @@
 
 | 變數名稱 | 說明 | 範例值 |
 |---|---|---|
-| `ADMIN_PASSWORD` | 管理後台登入密碼 (預設 1234) | `your_secret_pwd` |
+| `ADMIN_PASSWORD` 或 `PASSWORD` | 管理後台登入密碼 (預設 `0811`) | `0811` |
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE 官方帳號 API Token (推播訊息用) | `ey...` |
+| `LINE_ADMIN_USER_ID` | 管理員本人的 LINE User ID (接收新預約通知用) | `Uxxxxxxx...` |
 | `MYSQL_HOST` | MySQL 伺服器主機名 | `mysql.zeabur.internal` |
 | `MYSQL_USERNAME` | MySQL 使用者名稱 | `root` |
 | `MYSQL_PASSWORD` | MySQL 密碼 | `********` |
 | `MYSQL_DATABASE` | 資料庫名稱 | `clinic` |
+
+> 💡 **小提示 (Webhook 查詢 User ID)**：
+> 在 LINE Developers Console 設定好 Webhook 後，管理員可傳送 `我的ID` 給官方帳號，系統會自動回傳您的 LINE User ID 以供填入 `LINE_ADMIN_USER_ID`。
 
 ---
 
@@ -75,8 +81,8 @@ clinic-booking/
 ---
 
 ## 📝 未來擴充計畫 (Roadmap)
-- [ ] **LINE Push Notification**：當預約被核定時，主動發送訊息通知使用者。
-- [ ] **使用者取消預約**：允許使用者在指定時間前自行取消。
+- [x] **使用者取消預約**：允許使用者在指定時間前自行取消。
+- [x] **LINE Push Notification**：當預約被核定時，主動發送訊息通知使用者；有新預約時主動提醒管理員。
 - [ ] **多位醫師排班**：支援不同診間的多名醫師同步預約。
 
 ---
