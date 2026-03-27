@@ -1,7 +1,6 @@
 const slotsConfig = [
-    { time: "10:00", label: "10:00 - 11:00" },
-    { time: "11:00", label: "11:00 - 12:00" },
-    // 12:00 - 14:00 休息時間
+    { time: "10:00", label: "09:00 - 10:00" },
+    { time: "11:00", label: "10:00 - 11:00" },
     { time: "14:00", label: "14:00 - 15:00" },
     { time: "15:00", label: "15:00 - 16:00" },
     { time: "16:00", label: "16:00 - 17:00" },
@@ -14,98 +13,115 @@ const slotsConfig = [
 
 let selectedDate = new Date().toISOString().split('T')[0];
 let selectedSlot = null;
+let currentDayStatus = { isDayOpen: true, bookings: [] };
 
-// 初始化 LIFF (如果有的話)
-async function initLiff() {
+// 渲染時段
+async function fetchSlots() {
     try {
-        await liff.init({ liffId: "您的_LIFF_ID" });
-        if (!liff.isLoggedIn()) {
-            liff.login();
-        }
+        const response = await fetch(`/api/slots/${selectedDate}`);
+        currentDayStatus = await response.json();
+        renderSlots();
+        renderCalendar(); // 刷新日曆狀態
     } catch (err) {
-        console.log("LIFF 初始化失敗", err);
+        console.error("無法取得時段資料", err);
     }
 }
 
-// 渲染時段
 function renderSlots() {
     const container = document.getElementById('slots-container');
     container.innerHTML = '';
 
-    slotsConfig.forEach(slot => {
-        // 模擬已預約狀態 (Mock Data)
-        const isBooked = Math.random() > 0.8;
+    if (!currentDayStatus.isDayOpen) {
+        container.innerHTML = `<div style="padding: 20px; color: #cf222e; text-align: center; font-weight: 600;">本日休診，未開放預約。</div>`;
+        return;
+    }
 
+    const bookedSlots = currentDayStatus.bookings.map(b => b.slot_time);
+
+    slotsConfig.forEach(slot => {
+        const isBooked = bookedSlots.includes(slot.time);
         const card = document.createElement('div');
         card.className = `slot-card ${isBooked ? 'disabled' : ''}`;
         if (selectedSlot === slot.time) card.classList.add('selected');
 
         card.innerHTML = `
-      <span class="time">${slot.time}</span>
-      <span class="status-label">${isBooked ? '● 已額滿' : '○ 可預約'}</span>
-    `;
+            <span class="time">${slot.time}</span>
+            <span class="status-label">${isBooked ? '● 已額滿' : '○ 可預約'}</span>
+        `;
 
         if (!isBooked) {
-            card.onclick = () => selectSlot(slot.time);
+            card.onclick = () => {
+                selectedSlot = slot.time;
+                renderSlots();
+            };
         }
         container.appendChild(card);
     });
 }
 
-// 選擇時段
-function selectSlot(time) {
-    selectedSlot = time;
-    renderSlots();
-}
-
-// 渲染日曆 (簡化版)
 function renderCalendar() {
     const grid = document.getElementById('calendar-grid');
-    // 保持標籤
-    const labels = grid.querySelectorAll('.calendar-day-label');
+    if (!grid) return;
     grid.innerHTML = '';
-    labels.forEach(l => grid.appendChild(l));
 
     const today = new Date();
     for (let i = 0; i < 21; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
+        const dayOfWeek = d.getDay();
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
         if (dateStr === selectedDate) dayEl.classList.add('active');
-        dayEl.innerText = d.getDate();
+        if (isWeekend) dayEl.style.color = '#cf222e'; // 週末標註紅色
 
+        dayEl.innerText = d.getDate();
         dayEl.onclick = () => {
             selectedDate = dateStr;
+            selectedSlot = null; // 切換日期清空選擇
             document.getElementById('selected-date').innerText = selectedDate;
-            renderCalendar();
-            renderSlots();
+            fetchSlots();
         };
         grid.appendChild(dayEl);
     }
 }
 
-// 提交預約
-function submitBooking() {
-    if (!selectedSlot) {
-        alert("請先選擇一個預約時段！");
-        return;
-    }
-    const note = document.getElementById('booking-note').value;
-    const bookingData = {
-        date: selectedDate,
-        slot: selectedSlot,
-        note: note,
-        status: 'pending'
+async function submitBooking() {
+    if (!selectedSlot) return alert("請先選擇一個預約時段！");
+
+    // 取得 LINE 使用者資訊 (此處模擬)
+    const lineUser = {
+        line_user_id: 'U12345678',
+        display_name: '測試用戶'
     };
 
-    console.log("提交預約：", bookingData);
-    alert(`預約申請已送出！\n日期：${selectedDate}\n時段：${selectedSlot}\n請等候管理員核定。`);
+    const bookingData = {
+        line_user_id: lineUser.line_user_id,
+        display_name: lineUser.display_name,
+        booking_date: selectedDate,
+        slot_time: selectedSlot,
+        note: document.getElementById('booking-note').value
+    };
+
+    try {
+        const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+        });
+        const result = await response.json();
+        if (result.id) {
+            alert(`預約申請已成功送出！\n日期：${selectedDate}\n時段：${selectedSlot}\n請等候審核。`);
+            location.reload();
+        } else {
+            alert("預約失敗：" + (result.error || "未知錯誤"));
+        }
+    } catch (err) {
+        alert("提交失敗，請檢查網路連線。");
+    }
 }
 
-// 初始執行
+fetchSlots();
 renderCalendar();
-renderSlots();
-// initLiff();

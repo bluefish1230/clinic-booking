@@ -35,6 +35,48 @@ a {
     border-bottom: 1px solid #444c56;
 }
 
+/* =============================================
+   後台登入鎖定層 (Login Overlay)
+   ============================================= */
+.gh-login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f6f8fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.gh-login-card {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 32px;
+    width: 340px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+}
+
+.gh-logo-dark {
+    color: #1f2328;
+    margin-bottom: 16px;
+}
+
+.gh-login-card h2 {
+    font-size: 24px;
+    font-weight: 300;
+    margin-bottom: 8px;
+}
+
+.gh-login-card p {
+    font-size: 14px;
+    color: #57606a;
+}
+
 .gh-navbar-inner {
     max-width: 1200px;
     margin: 0 auto;
