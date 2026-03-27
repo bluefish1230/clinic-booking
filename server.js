@@ -163,6 +163,28 @@ app.post('/api/bookings', async (req, res) => {
 });
 
 // ---------------------------------------------
+// LINE Webhook (接收使用者訊息 / 查詢 User ID)
+// ---------------------------------------------
+app.post('/webhook', async (req, res) => {
+    res.sendStatus(200); // 先回應 LINE 伺服器
+    const events = req.body.events;
+    if (!events || events.length === 0) return;
+
+    for (const event of events) {
+        if (event.type === 'message' && event.message.type === 'text') {
+            const userId = event.source.userId;
+            const text = event.message.text;
+            console.log(`📩 收到訊息 | User ID: ${userId} | 內容: ${text}`);
+
+            // 當使用者傳「我的ID」時，回覆他的 User ID
+            if (text.trim() === '我的ID' || text.trim() === '我的id') {
+                await sendPushNotification(userId, `您的 LINE User ID 為：\n${userId}\n\n請將此 ID 提供給管理員設定通知功能。`);
+            }
+        }
+    }
+});
+
+// ---------------------------------------------
 // ADMIN API
 // ---------------------------------------------
 app.post('/api/admin/login', (req, res) => {
