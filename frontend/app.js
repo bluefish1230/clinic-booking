@@ -193,14 +193,6 @@ async function submitBooking() {
     });
     const resJ = await res.json();
     if (resJ.id) {
-        // 幫使用者在聊天室自動發送一句話，觸發官方帳號的一對一聊天視窗
-        if (liff.isInClient()) {
-            try {
-                await liff.sendMessages([{ type: "text", text: `我剛剛送出 ${selectedDate} ${selectedSlot} 的預約申請囉！` }]);
-            } catch (err) {
-                console.log('傳送訊息失敗', err);
-            }
-        }
         alert("申請成功！請等候核定");
         location.reload();
     }
