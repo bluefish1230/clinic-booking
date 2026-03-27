@@ -11,26 +11,36 @@ const slotsConfig = [
     { time: "21:00", label: "21:00 - 22:00" }
 ];
 
-let selectedDate = new Date().toISOString().split('T')[0];
-let currentViewDate = new Date(); // 目前查看的月份首頁
+// 核心：取得台灣目前的 YYYY-MM-DD 字串
+function getTaiwanDateString(dateObj = new Date()) {
+    return dateObj.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+}
+
+let selectedDate = getTaiwanDateString(); // 預設為台灣今天
+let currentViewDate = new Date();
 let selectedSlot = null;
 let currentDayStatus = { isDayOpen: true, bookings: [] };
 let customCalendarSettings = [];
 
-// Helper: 檢查時段緩衝 (+4 小時)
+// Helper: 檢查時段緩衝 (+4 小時，基於台灣時間)
 function isTooEarly(dateStr, slotTime) {
-    const now = new Date();
-    const target = new Date(`${dateStr}T${slotTime}:00`);
+    // 取得台灣現在的毫秒數
+    const nowInTW = new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" });
+    const now = new Date(nowInTW);
+
+    // 目標預約時間
+    const target = new Date(`${dateStr} ${slotTime}:00`);
+
     const bufferTime = now.getTime() + (4 * 60 * 60 * 1000);
     return target.getTime() < bufferTime;
 }
 
-// 預設休假
+// 預設休假 (以台灣日期判定)
 function isDefaultClosed(date) {
     const day = date.getDay();
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getTaiwanDateString(date);
     if (day === 0 || day === 6) return true;
-    const nationalHolidays = ['2026-04-03', '2026-04-04', '2026-04-05', '2026-05-01'];
+    const nationalHolidays = ['2026-04-03', '2026-04-04', '2026-04-05', '2026-05-01', '2026-06-19'];
     return nationalHolidays.includes(dateStr);
 }
 
@@ -62,9 +72,11 @@ function renderSlots() {
         const isBooked = bookedSlots.includes(slot.time);
         const isPast = isTooEarly(selectedDate, slot.time);
         const isDisabled = isBooked || isPast;
+
         const card = document.createElement('div');
         card.className = `slot-card ${isDisabled ? 'disabled' : ''}`;
         if (selectedSlot === slot.time) card.classList.add('selected');
+
         card.innerHTML = `<span class="time">${slot.time}</span><span class="status-label">${isBooked ? '● 已額滿' : (isPast ? '● 截止' : '○ 可預約')}</span>`;
         if (!isDisabled) card.onclick = () => { selectedSlot = slot.time; renderSlots(); };
         container.appendChild(card);
@@ -80,34 +92,29 @@ function renderCalendar() {
     const year = currentViewDate.getFullYear();
     const month = currentViewDate.getMonth();
 
-    // 更新標題 (YYYY年M月)
     monthTitle.innerText = `${year}年${month + 1}月`;
 
-    // 取得該月第一天是星期幾 (一=0, 二=1... 日=6)
     const firstDayOfMonth = new Date(year, month, 1);
     const startOffset = (firstDayOfMonth.getDay() + 6) % 7;
 
-    // 取得該月總天數
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // 填充空白
     for (let j = 0; j < startOffset; j++) {
         grid.appendChild(document.createElement('div'));
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const maxDate = new Date();
+    // 取出台灣時間的今天 (00:00:00) 以便範圍判斷
+    const todayStr = getTaiwanDateString();
+    const today = new Date(todayStr);
+    const maxDate = new Date(today);
     maxDate.setDate(today.getDate() + 60);
 
-    // 填充日期
     for (let day = 1; day <= daysInMonth; day++) {
         const d = new Date(year, month, day);
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = getTaiwanDateString(d);
 
         const isOutOfRange = (d < today || d > maxDate);
 
-        // 判斷休診
         const custom = customCalendarSettings.find(s => s.target_date.split('T')[0] === dateStr);
         let isClosed = custom ? (custom.is_open === 0) : isDefaultClosed(d);
 
@@ -131,26 +138,12 @@ function renderCalendar() {
     }
 }
 
-async function submitBooking() {
-    if (!selectedSlot) return alert("請先選擇時段");
-    const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            line_user_id: 'U123', display_name: 'User',
-            booking_date: selectedDate, slot_time: selectedSlot,
-            note: document.getElementById('booking-note').value
-        })
-    });
-    const result = await res.json();
-    if (result.id) { alert("預約成功"); location.reload(); }
-}
-
 async function startApp() {
     try {
         const res = await fetch('/api/admin/calendar-all');
         customCalendarSettings = await res.json();
     } catch (e) { }
+    document.getElementById('selected-date').innerText = selectedDate;
     await fetchSlots();
 }
 
