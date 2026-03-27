@@ -33,13 +33,22 @@ async function initLiff() {
             const profile = await liff.getProfile();
             userData.userId = profile.userId;
             userData.displayName = profile.displayName;
+            userData.pictureUrl = profile.pictureUrl;
 
             // 預填姓名
-            document.getElementById('patient-name').value = profile.displayName;
+            document.getElementById('patient-name').value = userData.displayName;
             // 預留頭像顯示
-            document.getElementById('user-avatar').innerHTML = `<img src="${profile.pictureUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            document.getElementById('user-avatar').innerHTML = `<img src="${userData.pictureUrl}" style="width:100%;height:100%;object-fit:cover;">`;
 
-            // 偵測是否由「取消按鈕」點開 (URL 帶有 page=my)
+            // 嘗試抓取歷史資料並帶入
+            try {
+                const profileRes = await fetch(`/api/user-profile/${userData.userId}`);
+                const profileData = await profileRes.json();
+                if (profileData.phone) document.getElementById('booking-phone').value = profileData.phone;
+                if (profileData.line_id) document.getElementById('booking-line-id').value = profileData.line_id;
+            } catch (e) { console.log('載入歷史聯絡資訊失敗', e); }
+
+            fetchSlots();      // 偵測是否由「取消按鈕」點開 (URL 帶有 page=my)
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('page') === 'my') {
                 switchView('mine');

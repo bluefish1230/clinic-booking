@@ -151,6 +151,18 @@ app.get('/api/slots/:date', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// 取得病患歷史聯絡資訊 (自動帶入用)
+app.get('/api/user-profile/:userId', async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            `SELECT phone, line_id FROM bookings WHERE line_user_id = ? AND (phone != '' OR line_id != '') ORDER BY created_at DESC LIMIT 1`,
+            [req.params.userId]
+        );
+        if (rows.length > 0) res.json(rows[0]);
+        else res.json({});
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // 使用者提交預約
 app.post('/api/bookings', async (req, res) => {
     try {

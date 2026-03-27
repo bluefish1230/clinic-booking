@@ -103,14 +103,29 @@
       <button class="tab-btn" onclick="switchView('mine')">我的預約</button>
     </div>
 
-    <!-- 姓名輸入 (自動帶入 LINE 暱稱) -->
-    <div class="profile-card">
-      <div style="flex: 1;">
-        <span class="label-small">掛號人姓名 (點擊可修改)</span>
-        <input type="text" id="patient-name" class="patient-input" placeholder="載入中...">
+    <!-- 姓名與聯絡資訊 (自動帶入 LINE 暱稱與歷史紀錄) -->
+    <div class="profile-card" style="display: flex; flex-direction: column; align-items: stretch; gap: 15px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="flex: 1;">
+          <span class="label-small">掛號人姓名 (點擊可修改)</span>
+          <input type="text" id="patient-name" class="patient-input" placeholder="載入中...">
+        </div>
+        <div id="user-avatar"
+          style="width: 40px; height: 40px; border-radius: 50%; background: #eee; overflow: hidden; flex-shrink: 0;">
+          <!-- LINE 大頭貼 -->
+        </div>
       </div>
-      <div id="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #eee; overflow: hidden;">
-        <!-- LINE 大頭貼 -->
+      <div style="display: flex; gap: 10px; border-top: 1px solid #f0f0f0; padding-top: 10px;">
+        <div style="flex: 1;">
+          <span class="label-small">聯絡手機 (點擊可修改)</span>
+          <input type="tel" id="booking-phone" class="patient-input" placeholder="選填"
+            style="font-size: 1rem; width: 100%;">
+        </div>
+        <div style="flex: 1;">
+          <span class="label-small">LINE ID (點擊可修改)</span>
+          <input type="text" id="booking-line-id" class="patient-input" placeholder="選填"
+            style="font-size: 1rem; width: 100%;">
+        </div>
       </div>
     </div>
 
@@ -143,10 +158,6 @@
       </div>
 
       <div class="form-section">
-        <input type="tel" id="booking-phone" placeholder="手機號碼 (選填)"
-          style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; font-size: 1rem; box-sizing: border-box;">
-        <input type="text" id="booking-line-id" placeholder="LINE ID (選填)"
-          style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; font-size: 1rem; box-sizing: border-box;">
         <textarea id="booking-note" placeholder="備註內容 (選填)..." rows="3"
           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; font-size: 1rem; box-sizing: border-box;"></textarea>
         <button class="btn-book" onclick="submitBooking()">確認預約申請</button>
