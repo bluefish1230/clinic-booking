@@ -78,7 +78,7 @@ async function sendPushNotification(to, text) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-            'Content-Length': data.length
+            'Content-Length': Buffer.byteLength(data)
         }
     };
 
