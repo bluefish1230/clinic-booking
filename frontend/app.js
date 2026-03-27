@@ -11,31 +11,24 @@ const slotsConfig = [
     { time: "21:00", label: "21:00 - 22:00" }
 ];
 
-// 核心：取得台灣目前的 YYYY-MM-DD 字串
 function getTaiwanDateString(dateObj = new Date()) {
     return dateObj.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
 }
 
-let selectedDate = getTaiwanDateString(); // 預設為台灣今天
-let currentViewDate = new Date();
+let selectedDate = getTaiwanDateString();
+let currentViewDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
 let selectedSlot = null;
 let currentDayStatus = { isDayOpen: true, bookings: [] };
 let customCalendarSettings = [];
 
-// Helper: 檢查時段緩衝 (+4 小時，基於台灣時間)
 function isTooEarly(dateStr, slotTime) {
-    // 取得台灣現在的毫秒數
     const nowInTW = new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" });
     const now = new Date(nowInTW);
-
-    // 目標預約時間
-    const target = new Date(`${dateStr} ${slotTime}:00`);
-
+    const target = new Date(`${dateStr.replace(/-/g, '/')} ${slotTime}:00`);
     const bufferTime = now.getTime() + (4 * 60 * 60 * 1000);
     return target.getTime() < bufferTime;
 }
 
-// 預設休假 (以台灣日期判定)
 function isDefaultClosed(date) {
     const day = date.getDay();
     const dateStr = getTaiwanDateString(date);
@@ -44,7 +37,6 @@ function isDefaultClosed(date) {
     return nationalHolidays.includes(dateStr);
 }
 
-// 切換月份
 function changeMonth(delta) {
     currentViewDate.setMonth(currentViewDate.getMonth() + delta);
     renderCalendar();
@@ -66,17 +58,14 @@ function renderSlots() {
         container.innerHTML = `<div style="padding: 20px; color: #cf222e; text-align: center; font-weight: 600;">本日休診，未開放預約。</div>`;
         return;
     }
-
     const bookedSlots = currentDayStatus.bookings.map(b => b.slot_time);
     slotsConfig.forEach(slot => {
         const isBooked = bookedSlots.includes(slot.time);
         const isPast = isTooEarly(selectedDate, slot.time);
         const isDisabled = isBooked || isPast;
-
         const card = document.createElement('div');
         card.className = `slot-card ${isDisabled ? 'disabled' : ''}`;
         if (selectedSlot === slot.time) card.classList.add('selected');
-
         card.innerHTML = `<span class="time">${slot.time}</span><span class="status-label">${isBooked ? '● 已額滿' : (isPast ? '● 截止' : '○ 可預約')}</span>`;
         if (!isDisabled) card.onclick = () => { selectedSlot = slot.time; renderSlots(); };
         container.appendChild(card);
@@ -91,41 +80,49 @@ function renderCalendar() {
     grid.innerHTML = '';
     const year = currentViewDate.getFullYear();
     const month = currentViewDate.getMonth();
-
     monthTitle.innerText = `${year}年${month + 1}月`;
 
     const firstDayOfMonth = new Date(year, month, 1);
     const startOffset = (firstDayOfMonth.getDay() + 6) % 7;
-
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let j = 0; j < startOffset; j++) {
         grid.appendChild(document.createElement('div'));
     }
 
-    // 取出台灣時間的今天 (00:00:00) 以便範圍判斷
+    // 取得台灣今天的字串
     const todayStr = getTaiwanDateString();
-    const today = new Date(todayStr);
-    const maxDate = new Date(today);
-    maxDate.setDate(today.getDate() + 60);
+    // 取得 60 天後的字串
+    const maxDateObj = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+    maxDateObj.setDate(maxDateObj.getDate() + 60);
+    const maxDateStr = getTaiwanDateString(maxDateObj);
 
     for (let day = 1; day <= daysInMonth; day++) {
         const d = new Date(year, month, day);
         const dateStr = getTaiwanDateString(d);
 
-        const isOutOfRange = (d < today || d > maxDate);
+        // 使用「字串比較」來判斷範圍，最穩健
+        const isPast = dateStr < todayStr;
+        const isFutureTooFar = dateStr > maxDateStr;
+        const isOutOfRange = isPast || isFutureTooFar;
 
         const custom = customCalendarSettings.find(s => s.target_date.split('T')[0] === dateStr);
         let isClosed = custom ? (custom.is_open === 0) : isDefaultClosed(d);
 
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
-        if (isOutOfRange) dayEl.style.opacity = '0.2';
+
+        if (isOutOfRange) {
+            dayEl.style.opacity = '0.2';
+            dayEl.style.cursor = 'default';
+        }
+
         if (dateStr === selectedDate) dayEl.classList.add('active');
         if (isClosed) dayEl.classList.add('closed');
 
         dayEl.innerText = day;
 
+        // 只有非過去且在範圍內的日期可以點擊
         if (!isOutOfRange) {
             dayEl.onclick = () => {
                 selectedDate = dateStr;
@@ -138,10 +135,26 @@ function renderCalendar() {
     }
 }
 
+async function submitBooking() {
+    if (!selectedSlot) return alert("請選擇時段");
+    const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            line_user_id: 'U12345678', display_name: '使用者',
+            booking_date: selectedDate, slot_time: selectedSlot,
+            note: document.getElementById('booking-note').value
+        })
+    });
+    const result = await res.json();
+    if (result.id) { alert("預約成功"); location.reload(); }
+}
+
 async function startApp() {
     try {
         const res = await fetch('/api/admin/calendar-all');
-        customCalendarSettings = await res.json();
+        const settings = await res.json();
+        customCalendarSettings = settings;
     } catch (e) { }
     document.getElementById('selected-date').innerText = selectedDate;
     await fetchSlots();
