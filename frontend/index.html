@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,11 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -18,15 +22,34 @@
 
     <div class="calendar-section">
       <div class="calendar-header">
+        <button class="nav-btn" onclick="changeMonth(-1)">
+          <svg viewBox="0 0 16 16" width="16" fill="currentColor">
+            <path
+              d="M9.78 12.78a.75.75 0 01-1.06 0L4.47 8.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 1.06L6.06 8l3.72 3.72a.75.75 0 010 1.06z" />
+          </svg>
+        </button>
         <h2 id="current-month">2026年3月</h2>
-        <div class="nav-btns">
-            <!-- 導覽按鈕 (省略) -->
-        </div>
+        <button class="nav-btn" onclick="changeMonth(1)">
+          <svg viewBox="0 0 16 16" width="16" fill="currentColor">
+            <path
+              d="M6.22 3.22a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L8.94 8 5.22 4.28a.75.75 0 010-1.06z" />
+          </svg>
+        </button>
       </div>
+
+      <!-- 固定顯示星期一~星期日 -->
+      <div class="calendar-week-header" id="weekday-labels">
+        <div class="week-label">一</div>
+        <div class="week-label">二</div>
+        <div class="week-label">三</div>
+        <div class="week-label">四</div>
+        <div class="week-label">五</div>
+        <div class="week-label" style="color: #cf222e;">六</div>
+        <div class="week-label" style="color: #cf222e;">日</div>
+      </div>
+
       <div id="calendar-grid" class="calendar-days">
-        <!-- 分鐘會動態生成，此處預展示 -->
-        <span class="calendar-day-label">日</span><span class="calendar-day-label">一</span><span class="calendar-day-label">二</span><span class="calendar-day-label">三</span><span class="calendar-day-label">四</span><span class="calendar-day-label">五</span><span class="calendar-day-label">六</span>
-        <!-- 日期格子 -->
+        <!-- 日期格子會由 JS 動態生成 -->
       </div>
     </div>
 
@@ -36,10 +59,7 @@
         <span id="selected-date" style="font-size: 0.8rem; color: var(--primary);">2026-03-26</span>
       </div>
       <div class="slots-grid" id="slots-container">
-        <!-- 10:00 - 11:00 -->
-        <!-- 11:00 - 12:00 -->
-        <!-- (休息 12-14) -->
-        <!-- 14:00 - 15:00... -->
+        <!-- 時段卡片 -->
       </div>
     </div>
 
@@ -47,13 +67,16 @@
       <textarea id="booking-note" placeholder="在此輸入預約備註 (例如服務內容、人數等)..." rows="4"></textarea>
       <button class="btn-book" onclick="submitBooking()">確認預約 (待核定)</button>
     </div>
-    
-    <div id="admin-entrance" style="margin-top:20px; text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
-        管理員入口
+
+    <div id="admin-entrance"
+      style="margin-top:20px; text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:pointer;"
+      onclick="window.location.href='admin.html'">
+      管理員入口
     </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
