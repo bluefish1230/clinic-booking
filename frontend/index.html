@@ -4,79 +4,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>官方帳號預約系統</title>
+  <title>診所預約系統</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap"
     rel="stylesheet">
+  <style>
+    /* 簡易 Tab 樣式 */
+    .view-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: none;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: -2px;
+    }
+
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    /* 姓名輸入區樣式 */
+    .profile-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .patient-input {
+      flex: 1;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      outline: none;
+    }
+
+    .label-small {
+      font-size: 0.7rem;
+      color: #888;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    /* 我的預約清單 */
+    .my-booking-item {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
     <header>
-      <h1>服務預約</h1>
-      <p>請選擇您的預約日期與時段</p>
+      <h1>診所服務預約</h1>
+      <p>專業、快速、貼心的醫療服務</p>
     </header>
 
-    <div class="calendar-section">
-      <div class="calendar-header">
-        <button class="nav-btn" onclick="changeMonth(-1)">
-          <svg viewBox="0 0 16 16" width="16" fill="currentColor">
-            <path
-              d="M9.78 12.78a.75.75 0 01-1.06 0L4.47 8.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 1.06L6.06 8l3.72 3.72a.75.75 0 010 1.06z" />
-          </svg>
-        </button>
-        <h2 id="current-month">2026年3月</h2>
-        <button class="nav-btn" onclick="changeMonth(1)">
-          <svg viewBox="0 0 16 16" width="16" fill="currentColor">
-            <path
-              d="M6.22 3.22a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L8.94 8 5.22 4.28a.75.75 0 010-1.06z" />
-          </svg>
-        </button>
-      </div>
+    <!-- 功能切換標籤 -->
+    <div class="view-tabs">
+      <button class="tab-btn active" onclick="switchView('booking')">我要預約</button>
+      <button class="tab-btn" onclick="switchView('mine')">我的預約</button>
+    </div>
 
-      <!-- 固定顯示星期一~星期日 -->
-      <div class="calendar-week-header" id="weekday-labels">
-        <div class="week-label">一</div>
-        <div class="week-label">二</div>
-        <div class="week-label">三</div>
-        <div class="week-label">四</div>
-        <div class="week-label">五</div>
-        <div class="week-label" style="color: #cf222e;">六</div>
-        <div class="week-label" style="color: #cf222e;">日</div>
+    <!-- 姓名輸入 (自動帶入 LINE 暱稱) -->
+    <div class="profile-card">
+      <div style="flex: 1;">
+        <span class="label-small">掛號人姓名 (點擊可修改)</span>
+        <input type="text" id="patient-name" class="patient-input" placeholder="載入中...">
       </div>
-
-      <div id="calendar-grid" class="calendar-days">
-        <!-- 日期格子會由 JS 動態生成 -->
+      <div id="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #eee; overflow: hidden;">
+        <!-- LINE 大頭貼 -->
       </div>
     </div>
 
-    <div class="slots-section" id="slots-area">
-      <div class="section-title">
-        <span>預約時段鎖定 (1小時/位)</span>
-        <span id="selected-date" style="font-size: 0.8rem; color: var(--primary);">2026-03-26</span>
+    <!-- 面板：我要預約 -->
+    <div id="panel-booking" class="view-panel active">
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <button class="nav-btn" onclick="changeMonth(-1)">&lt;</button>
+          <h2 id="current-month">載入中...</h2>
+          <button class="nav-btn" onclick="changeMonth(1)">&gt;</button>
+        </div>
+        <div class="calendar-week-header">
+          <div class="week-label">一</div>
+          <div class="week-label">二</div>
+          <div class="week-label">三</div>
+          <div class="week-label">四</div>
+          <div class="week-label">五</div>
+          <div class="week-label">六</div>
+          <div class="week-label">日</div>
+        </div>
+        <div id="calendar-grid" class="calendar-days"></div>
       </div>
-      <div class="slots-grid" id="slots-container">
-        <!-- 時段卡片 -->
+
+      <div class="slots-section">
+        <div class="section-title">
+          <span>選擇時段</span>
+          <span id="selected-date" style="font-size: 0.8rem; color: var(--primary);">請選擇日期</span>
+        </div>
+        <div class="slots-grid" id="slots-container"></div>
+      </div>
+
+      <div class="form-section">
+        <textarea id="booking-note" placeholder="備註內容 (選填)..." rows="3"></textarea>
+        <button class="btn-book" onclick="submitBooking()">確認預約申請</button>
       </div>
     </div>
 
-    <div class="form-section">
-      <textarea id="booking-note" placeholder="在此輸入預約備註 (例如服務內容、人數等)..." rows="4"></textarea>
-      <button class="btn-book" onclick="submitBooking()">確認預約 (待核定)</button>
+    <!-- 面板：我的中心 (查詢/取消) -->
+    <div id="panel-mine" class="view-panel">
+      <div id="my-bookings-list">
+        <!-- 動態渲染個人預約 -->
+        <p style="text-align: center; color: #888; padding: 40px;">正在讀取您的預約資料...</p>
+      </div>
     </div>
 
-    <div id="admin-entrance"
-      style="margin-top:20px; text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:pointer;"
+    <div id="admin-entrance" style="margin-top:30px; text-align:center; font-size:0.75rem; color:#ccc; cursor:pointer;"
       onclick="window.location.href='admin.html'">
-      管理員入口
+      進入管理後台
     </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="app.js"></script>
+  <script>
+    function switchView(view) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + view).classList.add('active');
+      event.target.classList.add('active');
+      if (view === 'mine') fetchMyBookings();
+    }
+  </script>
 </body>
 
 </html>
