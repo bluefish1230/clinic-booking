@@ -101,6 +101,27 @@ header p {
   font-weight: bold;
 }
 
+.calendar-day.closed {
+  color: #cf222e !important;
+  cursor: default;
+}
+
+.calendar-week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  text-align: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.week-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 /* Slots Section */
 .slots-section {
   background: var(--card-bg);
@@ -223,5 +244,12 @@ textarea:focus {
   text-transform: uppercase;
 }
 
-.badge-pending { background: #FFF4E5; color: #B45D00; }
-.badge-approved { background: #E7F9ED; color: #1E7E34; }
+.badge-pending {
+  background: #FFF4E5;
+  color: #B45D00;
+}
+
+.badge-approved {
+  background: #E7F9ED;
+  color: #1E7E34;
+}
