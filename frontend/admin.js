@@ -94,6 +94,12 @@ async function updateStatus(id, status) {
     fetchBookings();
 }
 
+async function deleteBooking(id) {
+    if (!confirm('確定要刪除這筆預約嗎？')) return;
+    await fetch(`/api/bookings/${id}?pwd=${adminPwd}`, { method: 'DELETE' });
+    fetchBookings();
+}
+
 async function contactUser(lineId, name) {
     const msg = prompt(`發送自訂訊息給 ${name}:`);
     if (!msg) return;
@@ -142,6 +148,13 @@ async function setCalendarDate() {
     });
     fetchCalendarSettings();
     alert('設定已保存');
+}
+
+async function deleteCalendarSetting(dateStr) {
+    if (!confirm(`確定要移除 ${dateStr.split('T')[0]} 的日曆例外設定嗎？`)) return;
+    const datePart = dateStr.split('T')[0];
+    await fetch(`/api/admin/calendar/${datePart}?pwd=${adminPwd}`, { method: 'DELETE' });
+    fetchCalendarSettings();
 }
 
 fetchBookings();

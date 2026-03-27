@@ -260,6 +260,12 @@ app.get('/api/admin/calendar-all', async (req, res) => {
     res.json(rows);
 });
 
+app.delete('/api/admin/calendar/:date', async (req, res) => {
+    if (req.query.pwd !== ADMIN_PASSWORD) return res.status(403).send('Forbidden');
+    await pool.execute(`DELETE FROM calendar_settings WHERE target_date = ?`, [req.params.date]);
+    res.json({ deleted: true });
+});
+
 const PORT = process.env.PORT || 3000;
 initDB().then(() => {
     app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
